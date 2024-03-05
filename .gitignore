@@ -1,0 +1,8 @@
+#put files to ignore
+node_modules/
+Configuration.js
+ConfigurationTest.js
+Constants.js
+.env
+access_token.json  
+access_token_test.json
