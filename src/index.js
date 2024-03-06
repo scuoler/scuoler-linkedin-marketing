@@ -89,11 +89,13 @@ const createLinkedInShare = async (courseObj) => {
       },
       owner: `urn:li:person:${getPersonId()}`,
       //owner: `urn:li:organization:86017971`,
-      subject: `Upskill yourself with the new course titled '${courseObj.name}' on https://scuoler.com platform. 
-      Browse more courses at https://scuoler.com/coursesBrowse and start your personal learning experience.`,
+      subject:
+        `Upskill yourself with the new course titled '${courseObj.name}' on https://scuoler.com platform. ` +
+        `Browse more courses at https://scuoler.com/coursesBrowse and start your personal learning experience.`,
       text: {
-        text: `Upskill yourself with the new course titled '${courseObj.name}' on https://scuoler.com platform.
-        Browse more courses at https://scuoler.com/coursesBrowse and start your learning experience.`,
+        text:
+          `Upskill yourself with the new course titled '${courseObj.name}' on https://scuoler.com platform. ` +
+          `Browse more courses at https://scuoler.com/coursesBrowse and start your learning experience.`,
       },
     };
     //console.log(body);
