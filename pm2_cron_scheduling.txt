@@ -1,1 +1,1 @@
-pm2 start src/index.js --no-autorestart --name "scuoler linkedin market" --cron "1 0 * * *"
+pm2 start src/index.js --no-autorestart --name "scuoler linkedin market" --cron "1 0,12 * * *"
