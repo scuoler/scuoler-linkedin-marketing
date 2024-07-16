@@ -1,4 +1,4 @@
-# Scuoler Sitemap Generator
+# Scuoler Linkedin Marketing
 
 [![License: MIT](https://img.shields.io/github/license/mathewjoseph31/schools?style=plastic)](https://opensource.org/licenses/MIT)
 
@@ -47,17 +47,25 @@ Instructions on how to build and launch the App from git sources is provided at 
 
 ## Sitemaps
 
-https://scuoler.com/coursesBrowse
-
-https://scuoler.com/problemsBrowse
+https://scuoler.com/userShowSelected/edupath
 
 https://scuoler.com/mainSitemap.xml
 
 https://scuoler.com/courseSitemap.xml
 
+https://scuoler.com/quizSitemap.xml
+
+https://scuoler.com/problemSitemap.xml
+
+https://scuoler.com/moduleSitemap.xml
+
+https://scuoler.com/lessonSitemap.xml
+
+https://scuoler.com/pageSitemap.xml
+
 ## MIT License
 
-&copy;2023 Mathew Joseph
+&copy;2024 Mathew Joseph
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

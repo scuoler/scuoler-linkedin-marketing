@@ -1,11 +1,13 @@
 {
-  "name": "scuoler-event-notifier",
+  "name": "scuoler-linkedin-marketing",
   "version": "1.0.0",
-  "description": "scuoler event notifier",
+  "description": "scuoler linkedin marketing",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "devstart": "node src/index.js"
+    "start": "tsc && node build/index.js",
+    "devstart": "tsc && node build/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts"
   },
   "author": "mathew",
   "license": "ISC",
@@ -14,5 +16,11 @@
     "libpq": "^1.8.12",
     "node-cron": "^3.0.2",
     "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/pg": "^8.11.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
   }
 }

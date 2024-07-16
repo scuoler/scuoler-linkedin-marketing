@@ -59,7 +59,7 @@ function getAccessTokenPath() {
 const createLinkedInShare = async (courseObj) => {
   const data = await fs.readFile(getAccessTokenPath(), "utf8");
   const { linkedInAccessToken } = JSON.parse(data);
-  //console.log(linkedInAccessToken);
+  console.log(linkedInAccessToken);
 
   if (linkedInAccessToken) {
     const headers = {
@@ -111,7 +111,7 @@ const createLinkedInShare = async (courseObj) => {
     //console.log(res);
 
     const json = await res.json();
-    //console.log(json);
+    console.log(json);
   }
 };
 
