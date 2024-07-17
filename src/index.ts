@@ -2,6 +2,7 @@ import { Pool, QueryResult } from "pg";
 
 const pg = require("pg");
 const fs = require("fs").promises;
+const constants = require("../Constants");
 require("dotenv").config();
 
 const configuration = require("../Configuration");
@@ -19,7 +20,7 @@ const getPool: () => Pool = () => {
     return pool;
 };
 
-const getRandomCourse: () => Promise<any> = () => {
+const getRandomCourse: () => Promise<any[]> = () => {
     const pool: Pool = getPool();
 
     let sql: string = `  select 
@@ -42,23 +43,70 @@ const getRandomCourse: () => Promise<any> = () => {
     });
 };
 
-const setLinkedSentTimestampForCourse = (courseId: string) => {
+const getRandomQuiz: () => Promise<any[]> = () => {
     const pool: Pool = getPool();
-    let sql: string = `
-     update course set linkedin_sent_timestamp=now(), modified_timestamp=now()
-      where id=$1
-    `;
+
+    let sql: string = `  select 
+   id, name, description, author_id, thumbnail, type, 
+    source, rating, likes, categories 
+   from public.quiz_get_one_random_for_linkedin_marketing()`;
     return new Promise((resolve, reject) => {
-        pool.query(sql, [courseId], function (err: Error, result: QueryResult) {
+        pool.query(sql, [], function (err: Error, result: QueryResult) {
             pool.end(() => { });
             if (err) {
                 reject(err);
             } else {
-                resolve("course linkedin sent timestamp updated");
+                let answer = [];
+                for (let i = 0; i < result.rows.length; i++) {
+                    answer.push(result.rows[i]);
+                }
+                resolve(answer);
             }
         });
     });
-}
+};
+
+const getRandomProblem: () => Promise<any[]> = () => {
+    const pool: Pool = getPool();
+
+    let sql: string = `  select 
+   id, description, options, author_id, type, 
+    source, rating, likes, categories 
+   from public.problem_get_one_random_for_linkedin_marketing()`;
+    return new Promise((resolve, reject) => {
+        pool.query(sql, [], function (err: Error, result: QueryResult) {
+            pool.end(() => { });
+            if (err) {
+                reject(err);
+            } else {
+                let answer = [];
+                for (let i = 0; i < result.rows.length; i++) {
+                    answer.push(result.rows[i]);
+                }
+                resolve(answer);
+            }
+        });
+    });
+};
+
+const setLinkedSentTimestamp: (entityName: string, entityId: string) => Promise<any>
+    = (entityName: string, entityId: string) => {
+        const pool: Pool = getPool();
+        let sql: string = `
+     update ${entityName} set linkedin_sent_timestamp=now(), modified_timestamp=now()
+      where id=$1
+    `;
+        return new Promise((resolve, reject) => {
+            pool.query(sql, [entityId], function (err: Error, result: QueryResult) {
+                pool.end(() => { });
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve("linkedin sent timestamp updated");
+                }
+            });
+        });
+    }
 
 function getPersonId(): string | undefined {
     let personId: string | undefined;
@@ -80,12 +128,15 @@ function getAccessTokenPath(): string | undefined {
     return access_token_path;
 }
 
-const createLinkedInShare: (courseObj: any) => void = async (courseObj: any) => {
+async function getLinkedInAccessToken(): Promise<string | undefined> {
     const data: string = await fs.readFile(getAccessTokenPath(), "utf8");
     const { linkedInAccessToken }: any = JSON.parse(data);
     console.log(linkedInAccessToken);
+    return linkedInAccessToken;
+}
 
-    if (linkedInAccessToken) {
+const createLinkedInShare: (linkedInAccessToken: string, entityLocation: string, thumbnail: string, name: string, text: string)
+    => void = async (linkedInAccessToken: string, entityLocation: string, thumbnail: string, name: string, text: string) => {
         const headers: any = {
             Authorization: "Bearer " + linkedInAccessToken,
             "cache-control": "no-cache",
@@ -98,28 +149,24 @@ const createLinkedInShare: (courseObj: any) => void = async (courseObj: any) => 
             content: {
                 contentEntities: [
                     {
-                        entityLocation: `https://scuoler.com/courseShowSelected/${courseObj.id}`,
+                        entityLocation: entityLocation,
                         thumbnails: [
                             {
-                                resolvedUrl: courseObj.thumbnail,
+                                resolvedUrl: thumbnail,
                             },
                         ],
                     },
                 ],
-                title: courseObj.name,
+                title: name,
             },
             distribution: {
                 linkedInDistributionTarget: {},
             },
             owner: `urn:li:person:${getPersonId()}`,
             //owner: `urn:li:organization:86017971`,
-            subject:
-                `Upskill yourself with the new course titled '${courseObj.name}' on https://scuoler.com platform. ` +
-                `Browse more courses at https://scuoler.com/coursesBrowse and start your personal learning experience.`,
+            subject: text,
             text: {
-                text:
-                    `Upskill yourself with the new course titled '${courseObj.name}' on https://scuoler.com platform. ` +
-                    `Browse more courses at https://scuoler.com/coursesBrowse and start your learning experience.`,
+                text: text,
             },
         };
         //console.log(body);
@@ -136,18 +183,91 @@ const createLinkedInShare: (courseObj: any) => void = async (courseObj: any) => 
 
         const json: any = await res.json();
         return json;
+    };
+
+const convertToAbsoluteUrl: (url: string) => string = (url: string) => {
+    if (url.trim().startsWith("http")) {
+        return url;
+    }
+    else {
+        return `https://${constants.LETSENCRYPT_DOMAIN_NAME}/${url}`;
+    }
+}
+
+const createLinkedInShareForCourse: (linkedInAccessToken: string) => void = async (linkedInAccessToken: string) => {
+    let courseArr: any[] = await getRandomCourse();
+    if (courseArr.length > 0) {
+        const entityLocation: string = `https://${constants.LETSENCRYPT_DOMAIN_NAME}/courseShowSelected/${courseArr[0].id}`;
+        const text: string =
+            `Upskill yourself with the new course titled '${courseArr[0].name}' on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
+            `Browse more courses at https://${constants.LETSENCRYPT_DOMAIN_NAME}/coursesBrowse and start your personal learning experience.`;
+        const thumbnailUrl: string = convertToAbsoluteUrl(courseArr[0].thumbnail);
+        let res: any;
+        res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, courseArr[0].name, text);
+        console.log(res);
+        res = await setLinkedSentTimestamp('course', courseArr[0]?.id)
+        console.log(res);
     }
 };
 
-const main: () => void = async () => {
-    let courseArr: any[] = await getRandomCourse();
-    if (courseArr.length > 0) {
+const createLinkedInShareForQuiz: (linkedInAccessToken: string) => void = async (linkedInAccessToken: string) => {
+    let quizArr: any[] = await getRandomQuiz();
+    if (quizArr.length > 0) {
+        const entityLocation: string = `https://${constants.LETSENCRYPT_DOMAIN_NAME}/quizShowSelected/${quizArr[0].id}`;
+        const categories: string[] = quizArr[0].categories;
+        const text: string =
+            `Refresh and test your knowledge ` +
+            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")}` : ``) +
+            ` by taking the new quiz titled '${quizArr[0].name}' on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
+            (quizArr[0].source ? `\n Author: ${quizArr[0].source} \n` : ``) +
+            `Browse and solve more quizes at https://${constants.LETSENCRYPT_DOMAIN_NAME}/quizesBrowse and keep your knowledge up-to-date.`;
+        const thumbnailUrl: string = convertToAbsoluteUrl(quizArr[0].thumbnail);
         let res: any;
-        res = await createLinkedInShare(courseArr[0]);
+        res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, quizArr[0].name, text);
         console.log(res);
-        res = await setLinkedSentTimestampForCourse(courseArr[0]?.id)
+        res = await setLinkedSentTimestamp('quiz', quizArr[0]?.id)
         console.log(res);
     }
+}
+
+const createLinkedInShareForProblem: (linkedInAccessToken: string) => void = async (linkedInAccessToken: string) => {
+    let problemArr: any[] = await getRandomProblem();
+    if (problemArr.length > 0) {
+        const entityLocation: string = `https://${constants.LETSENCRYPT_DOMAIN_NAME}/problemShowSelected/${problemArr[0].id}`;
+        const categories: string[] = problemArr[0].categories;
+        const options: string[] = problemArr[0]?.options;
+        const description: string = problemArr[0].description.replace(/<[^>]*>?/gm, '');
+        //problemArr[0].description.replace(/<(\/)?[^>]+(>|$)/g, "");
+        const text: string =
+            `Refresh and test your knowledge ` +
+            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")}` : ``) +
+            ` by solving the following problem:\n ${description} ` +
+            ((options.length > 0) ? `${options.reduce((accumulator, val, index) => {
+                return accumulator + '\n' + (index + 1) + ')' + val;
+            }, '')
+                }\n` : ``) +
+            `on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
+            (problemArr[0].source ? ` Author: ${problemArr[0].source} ` : ``) +
+            `, Browse and solve more problems at https://${constants.LETSENCRYPT_DOMAIN_NAME}/problemsBrowse and upskill your knowledge.`;
+
+        const thumbnailUrl: string = '';
+        const name: string = 'Scuoler Problem Challenge';
+        let res: any;
+        res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, name, text);
+        console.log(res);
+        res = await setLinkedSentTimestamp('problem', problemArr[0]?.id)
+        console.log(res);
+    }
+}
+
+const main = async () => {
+    const linkedInAccessToken = await getLinkedInAccessToken();
+    if (linkedInAccessToken) {
+        await createLinkedInShareForCourse(linkedInAccessToken)
+        await createLinkedInShareForQuiz(linkedInAccessToken);
+        await createLinkedInShareForProblem(linkedInAccessToken);
+    }
+
 };
 
 main();
