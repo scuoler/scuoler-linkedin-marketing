@@ -217,7 +217,7 @@ const createLinkedInShareForQuiz: (linkedInAccessToken: string) => void = async 
         const categories: string[] = quizArr[0].categories;
         const text: string =
             `Refresh and test your knowledge ` +
-            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")}` : ``) +
+            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
             ` by taking the new quiz titled '${quizArr[0].name}' on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
             (quizArr[0].source ? `\n Author: ${quizArr[0].source} \n` : ``) +
             `Browse and solve more quizes at https://${constants.LETSENCRYPT_DOMAIN_NAME}/quizesBrowse and keep your knowledge up-to-date.`;
@@ -240,9 +240,9 @@ const createLinkedInShareForProblem: (linkedInAccessToken: string) => void = asy
         //problemArr[0].description.replace(/<(\/)?[^>]+(>|$)/g, "");
         const text: string =
             `Refresh and test your knowledge ` +
-            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")}` : ``) +
+            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
             ` by solving the following problem:\n ${description} ` +
-            ((options.length > 0) ? `${options.reduce((accumulator, val, index) => {
+            ((options.length > 0) ? `\nOptions: \n${options.reduce((accumulator, val, index) => {
                 return accumulator + '\n' + (index + 1) + ')' + val;
             }, '')
                 }\n` : ``) +
