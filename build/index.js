@@ -170,6 +170,8 @@ const createLinkedInShare = async (linkedInAccessToken, entityLocation, thumbnai
     return json;
 };
 const convertToAbsoluteUrl = (url) => {
+    if (!url)
+        return "";
     if (url.trim().startsWith("http")) {
         return url;
     }
@@ -183,7 +185,10 @@ const createLinkedInShareForCourse = async (linkedInAccessToken) => {
         const entityLocation = `https://${constants.LETSENCRYPT_DOMAIN_NAME}/courseShowSelected/${courseArr[0].id}`;
         const text = `Upskill yourself with the new course titled '${courseArr[0].name}' on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
             `Browse more courses at https://${constants.LETSENCRYPT_DOMAIN_NAME}/coursesBrowse and start your personal learning experience.`;
-        const thumbnailUrl = convertToAbsoluteUrl(courseArr[0].thumbnail);
+        let thumbnailUrl = "https://scuoler.com/static/media/scuoler_logo.3a634752982670eac2eb8b3981a0c162.svg";
+        if (courseArr[0].thumbnail) {
+            thumbnailUrl = convertToAbsoluteUrl(courseArr[0].thumbnail);
+        }
         let res;
         res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, courseArr[0].name, text);
         console.log(res);
@@ -197,11 +202,13 @@ const createLinkedInShareForQuiz = async (linkedInAccessToken) => {
         const entityLocation = `https://${constants.LETSENCRYPT_DOMAIN_NAME}/quizShowSelected/${quizArr[0].id}`;
         const categories = quizArr[0].categories;
         const text = `Refresh and test your knowledge ` +
-            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")}` : ``) +
+            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
             ` by taking the new quiz titled '${quizArr[0].name}' on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
             (quizArr[0].source ? `\n Author: ${quizArr[0].source} \n` : ``) +
             `Browse and solve more quizes at https://${constants.LETSENCRYPT_DOMAIN_NAME}/quizesBrowse and keep your knowledge up-to-date.`;
-        const thumbnailUrl = convertToAbsoluteUrl(quizArr[0].thumbnail);
+        let thumbnailUrl = "https://scuoler.com/static/media/scuoler_logo.3a634752982670eac2eb8b3981a0c162.svg";
+        if (quizArr[0].thumbnail)
+            thumbnailUrl = convertToAbsoluteUrl(quizArr[0].thumbnail);
         let res;
         res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, quizArr[0].name, text);
         console.log(res);
@@ -218,9 +225,9 @@ const createLinkedInShareForProblem = async (linkedInAccessToken) => {
         const description = problemArr[0].description.replace(/<[^>]*>?/gm, '');
         //problemArr[0].description.replace(/<(\/)?[^>]+(>|$)/g, "");
         const text = `Refresh and test your knowledge ` +
-            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")}` : ``) +
+            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
             ` by solving the following problem:\n ${description} ` +
-            ((options.length > 0) ? `${options.reduce((accumulator, val, index) => {
+            ((options.length > 0) ? `\nOptions: \n${options.reduce((accumulator, val, index) => {
                 return accumulator + '\n' + (index + 1) + ')' + val;
             }, '')}\n` : ``) +
             `on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
@@ -238,8 +245,8 @@ const createLinkedInShareForProblem = async (linkedInAccessToken) => {
 const main = async () => {
     const linkedInAccessToken = await getLinkedInAccessToken();
     if (linkedInAccessToken) {
-        //await createLinkedInShareForCourse(linkedInAccessToken)
-        //await createLinkedInShareForQuiz(linkedInAccessToken);
+        await createLinkedInShareForCourse(linkedInAccessToken);
+        await createLinkedInShareForQuiz(linkedInAccessToken);
         await createLinkedInShareForProblem(linkedInAccessToken);
     }
 };

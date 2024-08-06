@@ -186,6 +186,8 @@ const createLinkedInShare: (linkedInAccessToken: string, entityLocation: string,
     };
 
 const convertToAbsoluteUrl: (url: string) => string = (url: string) => {
+    if (!url)
+        return "";
     if (url.trim().startsWith("http")) {
         return url;
     }
@@ -201,7 +203,10 @@ const createLinkedInShareForCourse: (linkedInAccessToken: string) => void = asyn
         const text: string =
             `Upskill yourself with the new course titled '${courseArr[0].name}' on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
             `Browse more courses at https://${constants.LETSENCRYPT_DOMAIN_NAME}/coursesBrowse and start your personal learning experience.`;
-        const thumbnailUrl: string = convertToAbsoluteUrl(courseArr[0].thumbnail);
+        let thumbnailUrl: string = "https://scuoler.com/static/media/scuoler_logo.3a634752982670eac2eb8b3981a0c162.svg";
+        if (courseArr[0].thumbnail) {
+            thumbnailUrl = convertToAbsoluteUrl(courseArr[0].thumbnail);
+        }
         let res: any;
         res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, courseArr[0].name, text);
         console.log(res);
@@ -221,7 +226,10 @@ const createLinkedInShareForQuiz: (linkedInAccessToken: string) => void = async 
             ` by taking the new quiz titled '${quizArr[0].name}' on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
             (quizArr[0].source ? `\n Author: ${quizArr[0].source} \n` : ``) +
             `Browse and solve more quizes at https://${constants.LETSENCRYPT_DOMAIN_NAME}/quizesBrowse and keep your knowledge up-to-date.`;
-        const thumbnailUrl: string = convertToAbsoluteUrl(quizArr[0].thumbnail);
+        let thumbnailUrl: string = "https://scuoler.com/static/media/scuoler_logo.3a634752982670eac2eb8b3981a0c162.svg";
+        if (quizArr[0].thumbnail)
+            thumbnailUrl = convertToAbsoluteUrl(quizArr[0].thumbnail);
+
         let res: any;
         res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, quizArr[0].name, text);
         console.log(res);
