@@ -2,8 +2,11 @@ import { Pool, QueryResult } from "pg";
 
 const pg = require("pg");
 const fs = require("fs").promises;
+const htmlEntities = require("html-entities");
 const constants = require("../Constants");
+
 require("dotenv").config();
+
 
 const configuration = require("../Configuration");
 
@@ -164,9 +167,9 @@ const createLinkedInShare: (linkedInAccessToken: string, entityLocation: string,
             },
             owner: `urn:li:person:${getPersonId()}`,
             //owner: `urn:li:organization:86017971`,
-            subject: text,
+            subject: htmlEntities.decode(text),
             text: {
-                text: text,
+                text: htmlEntities.decode(text),
             },
         };
         //console.log(body);

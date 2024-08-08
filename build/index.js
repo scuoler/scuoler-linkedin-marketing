@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const pg = require("pg");
 const fs = require("fs").promises;
+const htmlEntities = require("html-entities");
 const constants = require("../Constants");
 require("dotenv").config();
 const configuration = require("../Configuration");
@@ -153,9 +154,9 @@ const createLinkedInShare = async (linkedInAccessToken, entityLocation, thumbnai
         },
         owner: `urn:li:person:${getPersonId()}`,
         //owner: `urn:li:organization:86017971`,
-        subject: text,
+        subject: htmlEntities.decode(text),
         text: {
-            text: text,
+            text: htmlEntities.decode(text),
         },
     };
     //console.log(body);
