@@ -141,8 +141,6 @@ async function getLinkedInAccessToken(): Promise<string | undefined> {
 const createLinkedInShare: (linkedInAccessToken: string, entityLocation: string, thumbnail: string, name: string, text: string)
     => void = async (linkedInAccessToken: string, entityLocation: string, thumbnail: string, name: string, text: string) => {
 
-        text = text.replace(/\n\s*\n/g, '\n');
-
         const headers: any = {
             Authorization: "Bearer " + linkedInAccessToken,
             "cache-control": "no-cache",
@@ -250,14 +248,16 @@ const createLinkedInShareForProblem: (linkedInAccessToken: string) => void = asy
         const entityLocation: string = `https://${constants.LETSENCRYPT_DOMAIN_NAME}/problemShowSelected/${problemArr[0].id}`;
         const categories: string[] = problemArr[0].categories;
         const options: string[] = problemArr[0]?.options;
-        const description: string = problemArr[0].description.replace(/<[^>]*>?/gm, '');
-        //problemArr[0].description.replace(/<(\/)?[^>]+(>|$)/g, "");
+        let description: string = problemArr[0].description.replace(/<[^>]*>?/gm, '');
+        //compress consecutive new lines with just one
+        description = description.replace(/\n\s*\n/g, '\n');
+
         const text: string =
             `Refresh and test your knowledge ` +
             ((categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
             ` by solving the following problem:\n ${description} ` +
             ((options.length > 0) ? `\nOptions: \n${options.reduce((accumulator, val, index) => {
-                return accumulator + '\n' + (index + 1) + ')' + val;
+                return accumulator + '\n' + (index + 1) + ') ' + val;
             }, '')
                 }\n` : ``) +
             `on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
