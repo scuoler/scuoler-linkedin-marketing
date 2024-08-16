@@ -128,6 +128,7 @@ async function getLinkedInAccessToken() {
     return linkedInAccessToken;
 }
 const createLinkedInShare = async (linkedInAccessToken, entityLocation, thumbnail, name, text) => {
+    text = text.replace(/\n\s*\n/g, '\n');
     const headers = {
         Authorization: "Bearer " + linkedInAccessToken,
         "cache-control": "no-cache",

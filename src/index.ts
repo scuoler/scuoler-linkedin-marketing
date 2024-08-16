@@ -140,6 +140,9 @@ async function getLinkedInAccessToken(): Promise<string | undefined> {
 
 const createLinkedInShare: (linkedInAccessToken: string, entityLocation: string, thumbnail: string, name: string, text: string)
     => void = async (linkedInAccessToken: string, entityLocation: string, thumbnail: string, name: string, text: string) => {
+
+        text = text.replace(/\n\s*\n/g, '\n');
+
         const headers: any = {
             Authorization: "Bearer " + linkedInAccessToken,
             "cache-control": "no-cache",
