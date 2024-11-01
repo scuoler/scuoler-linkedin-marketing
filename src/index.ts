@@ -254,10 +254,11 @@ const createLinkedInShareForProblem: (linkedInAccessToken: string) => void = asy
 
         const text: string =
             `Refresh and test your knowledge ` +
-            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
+            ((categories && categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
             ` by solving the following problem:\n ${description} ` +
             ((options.length > 0) ? `\nOptions: \n${options.reduce((accumulator, val, index) => {
-                return accumulator + '\n' + (index + 1) + ') ' + val;
+                let option = val.replace(/<[^>]*>?/gm, '');
+                return accumulator + '\n' + (index + 1) + ') ' + option;
             }, '')
                 }\n` : ``) +
             `on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
@@ -267,6 +268,7 @@ const createLinkedInShareForProblem: (linkedInAccessToken: string) => void = asy
         const thumbnailUrl: string = '';
         const name: string = 'Scuoler Problem Challenge';
         let res: any;
+
         res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, name, text);
         console.log(res);
         res = await setLinkedSentTimestamp('problem', problemArr[0]?.id)

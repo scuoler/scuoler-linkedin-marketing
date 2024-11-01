@@ -128,7 +128,6 @@ async function getLinkedInAccessToken() {
     return linkedInAccessToken;
 }
 const createLinkedInShare = async (linkedInAccessToken, entityLocation, thumbnail, name, text) => {
-    text = text.replace(/\n\s*\n/g, '\n');
     const headers = {
         Authorization: "Bearer " + linkedInAccessToken,
         "cache-control": "no-cache",
@@ -160,16 +159,16 @@ const createLinkedInShare = async (linkedInAccessToken, entityLocation, thumbnai
             text: htmlEntities.decode(text),
         },
     };
-    //console.log(body);
+    console.log(body);
     const url = "https://api.linkedin.com/v2/shares";
     let res = await fetch(url, {
         headers: headers,
         method: "POST",
         body: JSON.stringify(body),
     });
-    //console.log(res);
-    const json = await res.json();
-    return json;
+    console.log(res);
+    /*const json: any = await res.json();
+    return json;*/
 };
 const convertToAbsoluteUrl = (url) => {
     if (!url)
@@ -224,13 +223,15 @@ const createLinkedInShareForProblem = async (linkedInAccessToken) => {
         const entityLocation = `https://${constants.LETSENCRYPT_DOMAIN_NAME}/problemShowSelected/${problemArr[0].id}`;
         const categories = problemArr[0].categories;
         const options = problemArr[0]?.options;
-        const description = problemArr[0].description.replace(/<[^>]*>?/gm, '');
-        //problemArr[0].description.replace(/<(\/)?[^>]+(>|$)/g, "");
+        let description = problemArr[0].description.replace(/<[^>]*>?/gm, '');
+        //compress consecutive new lines with just one
+        description = description.replace(/\n\s*\n/g, '\n');
         const text = `Refresh and test your knowledge ` +
-            ((categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
+            ((categories && categories.length >= 0) ? `in area(s): ${categories.join(", ")},` : ``) +
             ` by solving the following problem:\n ${description} ` +
             ((options.length > 0) ? `\nOptions: \n${options.reduce((accumulator, val, index) => {
-                return accumulator + '\n' + (index + 1) + ')' + val;
+                let option = val.replace(/<[^>]*>?/gm, '');
+                return accumulator + '\n' + (index + 1) + ') ' + option;
             }, '')}\n` : ``) +
             `on https://${constants.LETSENCRYPT_DOMAIN_NAME} platform. ` +
             (problemArr[0].source ? ` Author: ${problemArr[0].source} ` : ``) +
@@ -238,6 +239,7 @@ const createLinkedInShareForProblem = async (linkedInAccessToken) => {
         const thumbnailUrl = '';
         const name = 'Scuoler Problem Challenge';
         let res;
+        console.log(thumbnailUrl, text);
         res = await createLinkedInShare(linkedInAccessToken, entityLocation, thumbnailUrl, name, text);
         console.log(res);
         res = await setLinkedSentTimestamp('problem', problemArr[0]?.id);
@@ -248,8 +250,8 @@ const main = async () => {
     const linkedInAccessToken = await getLinkedInAccessToken();
     if (linkedInAccessToken) {
         await createLinkedInShareForCourse(linkedInAccessToken);
-        await createLinkedInShareForQuiz(linkedInAccessToken);
-        await createLinkedInShareForProblem(linkedInAccessToken);
+        // await createLinkedInShareForQuiz(linkedInAccessToken);
+        //await createLinkedInShareForProblem(linkedInAccessToken);
     }
 };
 main();
